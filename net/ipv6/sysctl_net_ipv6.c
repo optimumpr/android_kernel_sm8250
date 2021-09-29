@@ -21,10 +21,10 @@
 #include <net/calipso.h>
 #endif
 
-static int zero;
-static int one = 1;
-static int auto_flowlabels_min;
-static int auto_flowlabels_max = IP6_AUTO_FLOW_LABEL_MAX;
+static int zero __read_only;
+static int one __read_only = 1;
+static int auto_flowlabels_min __read_only;
+static int auto_flowlabels_max __read_only = IP6_AUTO_FLOW_LABEL_MAX;
 
 static int proc_rt6_multipath_hash_policy(struct ctl_table *table, int write,
 					  void __user *buffer, size_t *lenp,

@@ -181,7 +181,7 @@ int kswapd_threads_current = DEF_KSWAPD_THREADS_PER_NODE;
 #ifdef CONFIG_VBSWAP
 int vm_swappiness = 160;
 #else
-int vm_swappiness = 60;
+int vm_swappiness = 0;
 #endif
 /*
  * The total number of pages which are beyond the high watermark within all
