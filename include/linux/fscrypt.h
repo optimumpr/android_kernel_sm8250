@@ -543,6 +543,14 @@ static inline const char *fscrypt_get_symlink(struct inode *inode,
 {
 	return ERR_PTR(-EOPNOTSUPP);
 }
+
+static inline int fscrypt_symlink_getattr(const struct path *path,
+					  struct kstat *stat)
+{
+	return -EOPNOTSUPP;
+}
+
+int fscrypt_symlink_getattr(const struct path *path, struct kstat *stat);
 #endif	/* !CONFIG_FS_ENCRYPTION */
 
 /* inline_crypt.c */
