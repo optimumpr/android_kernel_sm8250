@@ -130,7 +130,6 @@ config ARM64
 	select HAVE_CMPXCHG_DOUBLE
 	select HAVE_CMPXCHG_LOCAL
 	select HAVE_CONTEXT_TRACKING
-	select HAVE_DEBUG_BUGVERBOSE
 	select HAVE_DEBUG_KMEMLEAK
 	select HAVE_DMA_CONTIGUOUS
 	select HAVE_DYNAMIC_FTRACE
@@ -1344,6 +1343,9 @@ config ARM64_VHE
 endmenu
 
 menu "ARMv8.2 architectural features"
+
+config AS_HAS_ARMV8_2
+       def_bool $(cc-option,-Wa$(comma)-march=armv8.2-a)
 
 config ARM64_UAO
 	bool "Enable support for User Access Override (UAO)"
