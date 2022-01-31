@@ -127,9 +127,9 @@ static int sixty __read_only = 60;
 #endif
 
 static int __maybe_unused neg_one __read_only = -1;
-static int __maybe_unused neg_three __read_only = -3;
+static int __maybe_unused neg_three = -3;
 
-static int zero __read_only;
+static int zero;
 static int __maybe_unused one __read_only = 1;
 static int __maybe_unused two __read_only = 2;
 static int __maybe_unused three __read_only = 3;
