@@ -15,7 +15,7 @@
 #include <linux/types.h>
 #include <linux/notifier.h>
 /**********************************************************/
-enum FP_MODE{
+enum FP_MODE {
 	GF_IMAGE_MODE = 0,
 	GF_KEY_MODE,
 	GF_SLEEP_MODE,
@@ -173,8 +173,8 @@ struct gf_dev {
 	signed enable_gpio;
 	int screen_state;
 };
-int gf_pinctrl_init(struct gf_dev* gf_dev);
-int gf_parse_dts(struct gf_dev* gf_dev);
+int gf_pinctrl_init(struct gf_dev *gf_dev);
+int gf_parse_dts(struct gf_dev *gf_dev);
 void gf_cleanup(struct gf_dev *gf_dev);
 int gf_power_on(struct gf_dev *gf_dev);
 int gf_power_off(struct gf_dev *gf_dev);
@@ -187,5 +187,5 @@ void sendnlmsg_tp(struct fp_underscreen_info *msg, int length);
 int netlink_init(void);
 void netlink_exit(void);
 extern int gf_opticalfp_irq_handler(int event);
-extern int opticalfp_irq_handler(struct fp_underscreen_info* tp_info);
+extern int opticalfp_irq_handler(struct fp_underscreen_info *tp_info);
 #endif /*__GF_SPI_H*/

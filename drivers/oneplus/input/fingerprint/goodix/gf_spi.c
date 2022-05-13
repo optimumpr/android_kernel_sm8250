@@ -327,7 +327,7 @@ static irqreturn_t gf_irq(int irq, void *handle)
 	//wake_lock_timeout(&fp_wakelock, msecs_to_jiffies(WAKELOCK_HOLD_TIME));
 	__pm_wakeup_event(fp_wakelock, WAKELOCK_HOLD_TIME);
 	sendnlmsg(&msg);
-#elif defined (GF_FASYNC)
+#elif defined(GF_FASYNC)
 	struct gf_dev *gf_dev = &gf;
 	if (gf_dev->async)
 		kill_fasync(&gf_dev->async, SIGIO, POLL_IN);
@@ -419,7 +419,7 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		if ((cmd == GF_IOC_ENABLE_POWER) || (cmd == GF_IOC_DISABLE_POWER)) {
 			pr_info("power cmd\n");
 		} else {
-			pr_info("Sensor is power off currently. \n");
+			pr_info("Sensor is power off currently.\n");
 			//return -ENODEV;
 		}
 	}
@@ -444,7 +444,7 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		gf_enable_irq(gf_dev);
 		break;
 	case GF_IOC_RESET:
-		pr_info("%s GF_IOC_RESET. \n", __func__);
+		pr_info("%s GF_IOC_RESET.\n", __func__);
 		gf_hw_reset(gf_dev, 0);
 		break;
 	case GF_IOC_INPUT_KEY_EVENT:
@@ -662,8 +662,8 @@ static const struct attribute_group gf_attribute_group = {
 	.attrs = gf_attributes,
 };
 
-static struct fp_underscreen_info fp_tpinfo ={0};
-int opticalfp_irq_handler(struct fp_underscreen_info* tp_info)
+static struct fp_underscreen_info fp_tpinfo = {0};
+int opticalfp_irq_handler(struct fp_underscreen_info *tp_info)
 {
 	pr_debug("[info]:%s", __func__);
 
@@ -673,13 +673,13 @@ int opticalfp_irq_handler(struct fp_underscreen_info* tp_info)
 	fp_tpinfo = *tp_info;
 
 	if (fp_tpinfo.touch_state == 1) {
-		pr_debug("TOUCH DOWN, fp_tpinfo.x = %d, fp_tpinfo.y = %d \n", fp_tpinfo.x, fp_tpinfo.y);
+		pr_debug("TOUCH DOWN, fp_tpinfo.x = %d, fp_tpinfo.y = %d\n", fp_tpinfo.x, fp_tpinfo.y);
 		fp_tpinfo.touch_state = GF_NET_EVENT_TP_TOUCHDOWN;
-		sendnlmsg_tp(&fp_tpinfo,sizeof(fp_tpinfo));
+		sendnlmsg_tp(&fp_tpinfo, sizeof(fp_tpinfo));
 	} else if (fp_tpinfo.touch_state == 0) {
-		pr_debug("TOUCH UP, fp_tpinfo.x = %d, fp_tpinfo.y = %d \n", fp_tpinfo.x, fp_tpinfo.y);
+		pr_debug("TOUCH UP, fp_tpinfo.x = %d, fp_tpinfo.y = %d\n", fp_tpinfo.x, fp_tpinfo.y);
 		fp_tpinfo.touch_state = GF_NET_EVENT_TP_TOUCHUP;
-		sendnlmsg_tp(&fp_tpinfo,sizeof(fp_tpinfo));
+		sendnlmsg_tp(&fp_tpinfo, sizeof(fp_tpinfo));
 	}
 	return 0;
 }
@@ -733,7 +733,7 @@ static int goodix_fb_state_chg_callback(struct notifier_block *nb,
 #if defined(GF_NETLINK_ENABLE)
 				msg = GF_NET_EVENT_FB_BLACK;
 				sendnlmsg(&msg);
-#elif defined (GF_FASYNC)
+#elif defined(GF_FASYNC)
 				if (gf_dev->async) {
 					kill_fasync(&gf_dev->async, SIGIO, POLL_IN);
 				}
@@ -746,7 +746,7 @@ static int goodix_fb_state_chg_callback(struct notifier_block *nb,
 #if defined(GF_NETLINK_ENABLE)
 				msg = GF_NET_EVENT_FB_UNBLACK;
 				sendnlmsg(&msg);
-#elif defined (GF_FASYNC)
+#elif defined(GF_FASYNC)
 				if (gf_dev->async) {
 					kill_fasync(&gf_dev->async, SIGIO, POLL_IN);
 				}
@@ -993,10 +993,10 @@ static int gf_probe(struct platform_device *pdev)
 		status = drm_panel_notifier_register(lcd_active_panel, &gf_dev->msm_drm_notif);
 		if (status) {
 			pr_err("Unable to register fb_notifier: %d\n", status);
-		}else{
+		} else {
 			pr_err("register notifier drm panel success!");
 		}
-	}else{
+	} else {
 		pr_err("Ooops!!! lcd_active_panel is null, unable to register fb_notifier!");
 	}
 #endif
