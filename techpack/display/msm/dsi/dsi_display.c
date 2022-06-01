@@ -8893,6 +8893,12 @@ int dsi_display_enable(struct dsi_display *display)
 	}
 	SDE_ATRACE_END("dsi_display_enable");
 
+	rc = dsi_display_set_backlight(display->drm_conn, display,
+				       display->panel->bl_config.bl_level);
+	if (rc)
+		pr_warn("[%s]failed to restore previous brightness, rc=%d\n",
+			display->name, rc);
+
 	goto error;
 
 error_disable_panel:
