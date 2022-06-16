@@ -2289,14 +2289,14 @@ static void dwc3_msm_power_collapse_por(struct dwc3_msm *mdwc)
 
 }
 
-static int dwc3_msm_prepare_suspend(struct dwc3_msm *mdwc)
+static int dwc3_msm_prepare_suspend(struct dwc3_msm *mdwc, bool ignore_p3_state)
 {
 	struct dwc3 *dwc = platform_get_drvdata(mdwc->dwc3);
 	unsigned long timeout;
 	u32 reg = 0;
 
-	if ((mdwc->in_host_mode || mdwc->in_device_mode)
-			&& dwc3_msm_is_superspeed(mdwc) && !mdwc->in_restart) {
+	if (!ignore_p3_state && ((mdwc->in_host_mode || mdwc->in_device_mode)
+			&& dwc3_msm_is_superspeed(mdwc) && !mdwc->in_restart)) {
 		if (!atomic_read(&mdwc->in_p3)) {
 			dev_err(mdwc->dev, "Not in P3,aborting LPM sequence\n");
 			return -EBUSY;
@@ -2396,7 +2396,8 @@ static void configure_usb_wakeup_interrupt(struct dwc3_msm *mdwc,
 	}
 }
 
-static void configure_usb_wakeup_interrupts(struct dwc3_msm *mdwc, bool enable)
+
+static void enable_usb_pdc_interrupt(struct dwc3_msm *mdwc, bool enable)
 {
 	if (!enable)
 		goto disable_usb_irq;
@@ -2522,7 +2523,7 @@ static int dwc3_msm_update_bus_bw(struct dwc3_msm *mdwc, enum bus_vote bv)
 	return ret;
 }
 
-static int dwc3_msm_suspend(struct dwc3_msm *mdwc, bool enable_wakeup)
+static int dwc3_msm_suspend(struct dwc3_msm *mdwc, bool force_power_collapse)
 {
 	int ret;
 	struct dwc3 *dwc = platform_get_drvdata(mdwc->dwc3);
@@ -2584,7 +2585,7 @@ static int dwc3_msm_suspend(struct dwc3_msm *mdwc, bool enable_wakeup)
 		return -EBUSY;
 	}
 
-	ret = dwc3_msm_prepare_suspend(mdwc);
+	ret = dwc3_msm_prepare_suspend(mdwc, force_power_collapse);
 	if (ret) {
 		mutex_unlock(&mdwc->suspend_resume_mutex);
 		return ret;
@@ -2615,9 +2616,7 @@ static int dwc3_msm_suspend(struct dwc3_msm *mdwc, bool enable_wakeup)
 		((mdwc->hs_phy->flags & (PHY_HSFS_MODE | PHY_LS_MODE)) &&
 			!dwc3_msm_is_superspeed(mdwc)));
 	can_suspend_ssphy = dwc->maximum_speed >= USB_SPEED_SUPER &&
-			(!(mdwc->use_pwr_event_for_wakeup &
-				PWR_EVENT_SS_WAKEUP) || no_active_ss ||
-							!enable_wakeup);
+			(!mdwc->use_pwr_event_for_wakeup || no_active_ss);
 	/* Suspend SS PHY */
 	if (can_suspend_ssphy) {
 		if (mdwc->in_host_mode) {
@@ -2675,7 +2674,7 @@ static int dwc3_msm_suspend(struct dwc3_msm *mdwc, bool enable_wakeup)
 
 	/* Perform controller power collapse */
 	if (!(mdwc->in_host_mode || mdwc->in_device_mode) ||
-	      mdwc->in_restart) {
+	      mdwc->in_restart || force_power_collapse) {
 		mdwc->lpm_flags |= MDWC3_POWER_COLLAPSE;
 		dev_dbg(mdwc->dev, "%s: power collapse\n", __func__);
 		dwc3_msm_config_gdsc(mdwc, 0);
@@ -2707,14 +2706,11 @@ static int dwc3_msm_suspend(struct dwc3_msm *mdwc, bool enable_wakeup)
 	/*
 	 * with DCP or during cable disconnect, we dont require wakeup
 	 * using HS_PHY_IRQ or SS_PHY_IRQ. Hence enable wakeup only in
-	 * case of host bus suspend and device bus suspend. Also in
-	 * case of platforms with mpm interrupts and snps phy, enable
-	 * dpse hsphy irq and dmse hsphy irq as done for pdc interrupts.
+	 * case of host bus suspend and device bus suspend.
 	 */
-	if (!(mdwc->lpm_flags & MDWC3_POWER_COLLAPSE) && enable_wakeup) {
-		if (mdwc->use_pdc_interrupts ||
-				!mdwc->wakeup_irq[HS_PHY_IRQ].irq) {
-			configure_usb_wakeup_interrupts(mdwc, true);
+	if (mdwc->in_device_mode || mdwc->in_host_mode) {
+		if (mdwc->use_pdc_interrupts) {
+			enable_usb_pdc_interrupt(mdwc, true);
 		} else {
 			uirq = &mdwc->wakeup_irq[HS_PHY_IRQ];
 			configure_nonpdc_usb_interrupt(mdwc, uirq, true);
@@ -2880,9 +2876,8 @@ static int dwc3_msm_resume(struct dwc3_msm *mdwc)
 
 	/* Disable wakeup capable for HS_PHY IRQ & SS_PHY_IRQ if enabled */
 	if (mdwc->lpm_flags & MDWC3_ASYNC_IRQ_WAKE_CAPABILITY) {
-		if (mdwc->use_pdc_interrupts ||
-			!mdwc->wakeup_irq[HS_PHY_IRQ].irq) {
-			configure_usb_wakeup_interrupts(mdwc, false);
+		if (mdwc->use_pdc_interrupts) {
+			enable_usb_pdc_interrupt(mdwc, false);
 		} else {
 			uirq = &mdwc->wakeup_irq[HS_PHY_IRQ];
 			configure_nonpdc_usb_interrupt(mdwc, uirq, false);
