@@ -83,6 +83,10 @@ ifeq ($(CONFIG_DM_VERITY_FEC),y)
 dm-verity-objs			+= dm-verity-fec.o
 endif
 
+ifeq ($(CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG),y)
+dm-verity-objs			+= dm-verity-verify-sig.o
+endif
+
 ifeq ($(CONFIG_DM_VERITY_AVB),y)
 dm-verity-objs			+= dm-verity-avb.o
 endif
