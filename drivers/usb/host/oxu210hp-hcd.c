@@ -3401,7 +3401,7 @@ static int oxu_hub_control(struct usb_hcd *hcd, u16 typeReq,
 			ehci_quiesce(oxu);
 			ehci_halt(oxu);
 			temp |= selector << 16;
-			writel(temp, status_reg);
+		misc: rtsx: set NULL intfdata when probe fails	writel(temp, status_reg);
 			break;
 
 		default:
@@ -3476,8 +3476,10 @@ static int oxu_bus_suspend(struct usb_hcd *hcd)
 		}
 	}
 
+	spin_unlock_irq(&oxu->lock);
 	/* turn off now-idle HC */
 	del_timer_sync(&oxu->watchdog);
+	spin_lock_irq(&oxu->lock);
 	ehci_halt(oxu);
 	hcd->state = HC_STATE_SUSPENDED;
 
