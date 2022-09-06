@@ -64,7 +64,7 @@
 
 #ifdef CONFIG_STACKPROTECTOR
 #include <linux/stackprotector.h>
-__visible unsigned long __stack_chk_guard __read_mostly;
+__visible unsigned long __stack_chk_guard __ro_after_init;
 EXPORT_SYMBOL(__stack_chk_guard);
 #endif
 
@@ -601,9 +601,9 @@ unsigned long arch_align_stack(unsigned long sp)
 unsigned long arch_randomize_brk(struct mm_struct *mm)
 {
 	if (is_compat_task())
-		return randomize_page(mm->brk, SZ_32M);
+		return mm->brk + get_random_long() % SZ_32M + PAGE_SIZE);
 	else
-		return randomize_page(mm->brk, SZ_1G);
+		return mm->brk + get_random_long() % SZ_1G + PAGE_SIZE;
 }
 
 /*
