@@ -1413,6 +1413,8 @@ int ipa3_xdci_disconnect(u32 clnt_hdl, bool should_force_clear, u32 qmi_req_id)
 	if (!ep->keep_ipa_awake)
 		IPA_ACTIVE_CLIENTS_INC_EP(ipa3_get_client_mapping(clnt_hdl));
 
+	ipa3_disable_data_path(clnt_hdl);
+
 	if (!IPA_CLIENT_IS_CONS(ep->client)) {
 		IPADBG("Stopping PROD channel - hdl=%d clnt=%d\n",
 			clnt_hdl, ep->client);
@@ -1436,8 +1438,6 @@ int ipa3_xdci_disconnect(u32 clnt_hdl, bool should_force_clear, u32 qmi_req_id)
 			goto stop_chan_fail;
 		}
 	}
-
-	ipa3_disable_data_path(clnt_hdl);
 
 	IPA_ACTIVE_CLIENTS_DEC_EP(ipa3_get_client_mapping(clnt_hdl));
 
