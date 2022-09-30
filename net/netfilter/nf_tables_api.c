@@ -4264,6 +4264,7 @@ static struct nft_trans *nft_trans_elem_alloc(struct nft_ctx *ctx,
 	if (trans == NULL)
 		return NULL;
 
+	INIT_LIST_HEAD(&trans->list);
 	nft_trans_elem_set(trans) = set;
 	return trans;
 }
