@@ -1273,8 +1273,11 @@ static int nbd_start_device_ioctl(struct nbd_device *nbd, struct block_device *b
 					 atomic_read(&config->recv_threads) == 0);
 	if (ret)
 		sock_shutdown(nbd);
+	if (ret) {
+		sock_shutdown(nbd);
+		nbd_clear_que(nbd);
+	}
 	flush_workqueue(nbd->recv_workq);
-
 	mutex_lock(&nbd->config_lock);
 	nbd_bdev_reset(bdev);
 	/* user requested, ignore socket errors */
