@@ -1489,7 +1489,6 @@ static int msm_lsm_ioctl_shared(struct snd_pcm_substream *substream,
 		if (copy_from_user(&enable, arg, sizeof(enable))) {
 			dev_err(rtd->dev, "%s: %s: copy_frm_user failed\n",
 				__func__, "LSM_LAB_CONTROL");
-			__pm_relax(prtd->ws);
 		}
 
 		dev_dbg(rtd->dev, "%s: ioctl %s, enable = %d\n",
