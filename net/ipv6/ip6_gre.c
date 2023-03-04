@@ -1149,6 +1149,7 @@ static void ip6gre_tnl_link_config_route(struct ip6_tnl *t, int set_mtu,
 
 			if (set_mtu) {
 				int mtu = rt->dst.dev->mtu - t_hlen;
+
 				if (!(t->parms.flags & IP6_TNL_F_IGN_ENCAP_LIMIT))
 					mtu -= 8;
 				if (dev->type == ARPHRD_ETHER)
