@@ -2552,6 +2552,7 @@ static int ext4_xattr_move_to_block(handle_t *handle, struct inode *inode,
 		.in_inode = !!entry->e_value_inum,
 	};
 	struct ext4_xattr_ibody_header *header = IHDR(inode, raw_inode);
+	int needs_kvfree = 0;
 	int error;
 
 	is = kzalloc(sizeof(struct ext4_xattr_ibody_find), GFP_NOFS);
@@ -2575,7 +2576,7 @@ static int ext4_xattr_move_to_block(handle_t *handle, struct inode *inode,
 			goto out;
 		}
 
-		error = ext4_xattr_inode_get(inode, entry, buffer, value_size);
+		needs_kvfree = 1;
 		if (error)
 			goto out;
 	} else {
@@ -2612,7 +2613,7 @@ static int ext4_xattr_move_to_block(handle_t *handle, struct inode *inode,
 	error = ext4_xattr_ibody_set(handle, inode, &i, is);
 out:
 	kfree(b_entry_name);
-	if (entry->e_value_inum && buffer)
+	if (needs_kvfree && buffer)
 		kvfree(buffer);
 	if (is)
 		brelse(is->iloc.bh);
