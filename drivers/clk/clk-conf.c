@@ -39,6 +39,7 @@ static int __set_clk_parents(struct device_node *node, bool clk_supplier)
 		if (clkspec.np == node && !clk_supplier) {
 			of_node_put(clkspec.np);
 			return 0;
+		}
 		pclk = of_clk_get_from_provider(&clkspec);
 		of_node_put(clkspec.np);
 		if (IS_ERR(pclk)) {
