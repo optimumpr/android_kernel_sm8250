@@ -343,6 +343,8 @@ static int lapbeth_new_device(struct net_device *dev)
 	int rc = -ENOMEM;
 
 	ASSERT_RTNL();
+	if (dev->type != ARPHRD_ETHER)
+		return -EINVAL;
 
 	ndev = alloc_netdev(sizeof(*lapbeth), "lapb%d", NET_NAME_UNKNOWN,
 			    lapbeth_setup);
