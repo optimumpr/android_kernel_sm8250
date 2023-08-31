@@ -5702,11 +5702,14 @@ static inline int l2cap_le_command_rej(struct l2cap_conn *conn,
 	chan = __l2cap_get_chan_by_ident(conn, cmd->ident);
 	if (!chan)
 		goto done;
+	chan = l2cap_chan_hold_unless_zero(chan);
+	if (!chan)
+		goto done;
 
 	l2cap_chan_lock(chan);
 	l2cap_chan_del(chan, ECONNREFUSED);
 	l2cap_chan_unlock(chan);
-
+	l2cap_chan_put(chan);
 done:
 	mutex_unlock(&conn->chan_lock);
 	return 0;
