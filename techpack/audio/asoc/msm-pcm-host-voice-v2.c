@@ -649,6 +649,12 @@ static void hpcm_copy_playback_data_from_queue(struct dai_data *dai_data,
 	if (dai_data->substream == NULL)
 		return;
 
+	if (len >= HPCM_MAX_VOC_PKT_SIZE) {
+		pr_err("%s: Copy capture data len %d is > HPCM_MAX_VOC_PKT_SIZE\n",
+			__func__, len);
+		return;
+	}
+
 	spin_lock_irqsave(&dai_data->dsp_lock, dsp_flags);
 
 	if (!list_empty(&dai_data->filled_queue)) {
