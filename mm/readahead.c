@@ -592,6 +592,7 @@ ssize_t ksys_readahead(int fd, loff_t offset, size_t count)
 	 * on this file, then we must return -EINVAL.
 	 */
 	ret = -EINVAL;
+	if (!f.file->f_mapping || !f.file->f_mapping->a_ops ||
 	    (!S_ISREG(file_inode(f.file)->i_mode) &&
 	    !S_ISBLK(file_inode(f.file)->i_mode)))
 		goto out;
