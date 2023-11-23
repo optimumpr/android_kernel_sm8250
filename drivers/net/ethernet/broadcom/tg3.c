@@ -18214,6 +18214,7 @@ static void tg3_shutdown(struct pci_dev *pdev)
 		dev_close(dev);
 
 	if (system_state == SYSTEM_POWER_OFF)
+	if (system_state == SYSTEM_POWER_OFF)
 		tg3_power_down(tp);
 
 	rtnl_unlock();
