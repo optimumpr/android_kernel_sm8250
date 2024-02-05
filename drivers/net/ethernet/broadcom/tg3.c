@@ -6447,6 +6447,13 @@ static void tg3_dump_state(struct tg3 *tp)
 {
 	int i;
 	u32 *regs;
+	/* If it is a PCI error, all registers will be 0xffff,
+	 * we don't dump them out, just report the error and return
+	 */
+	if (tp->pdev->error_state != pci_channel_io_normal) {
+		netdev_err(tp->dev, "PCI channel ERROR!\n");
+		return;
+	}
 
 	regs = kzalloc(TG3_REG_BLK_SIZE, GFP_ATOMIC);
 	if (!regs)
@@ -11197,7 +11204,8 @@ static void tg3_reset_task(struct work_struct *work)
 	rtnl_lock();
 	tg3_full_lock(tp, 0);
 
-	if (!netif_running(tp->dev)) {
+	if (tp->pcierr_recovery || !netif_running(tp->dev) ||
+	    tp->pdev->error_state != pci_channel_io_normal) {
 		tg3_flag_clear(tp, RESET_TASK_PENDING);
 		tg3_full_unlock(tp);
 		rtnl_unlock();
@@ -18243,7 +18251,6 @@ static void tg3_shutdown(struct pci_dev *pdev)
 		dev_close(dev);
 
 	if (system_state == SYSTEM_POWER_OFF)
-	if (system_state == SYSTEM_POWER_OFF)
 		tg3_power_down(tp);
 
 	rtnl_unlock();
@@ -18265,6 +18272,8 @@ static pci_ers_result_t tg3_io_error_detected(struct pci_dev *pdev,
 	pci_ers_result_t err = PCI_ERS_RESULT_NEED_RESET;
 
 	netdev_info(netdev, "PCI I/O error detected\n");
+	/* Want to make sure that the reset task doesn't run */
+	tg3_reset_task_cancel(tp);
 
 	rtnl_lock();
 
@@ -18281,9 +18290,6 @@ static pci_ers_result_t tg3_io_error_detected(struct pci_dev *pdev,
 	tg3_netif_stop(tp);
 
 	tg3_timer_stop(tp);
-
-	/* Want to make sure that the reset task doesn't run */
-	tg3_reset_task_cancel(tp);
 
 	netif_device_detach(netdev);
 
