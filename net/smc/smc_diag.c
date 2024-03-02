@@ -147,7 +147,7 @@ static int __smc_diag_dump(struct sock *sk, struct sk_buff *skb,
 
 	if (smc->conn.lgr && !smc->conn.lgr->is_smcd &&
 	    (req->diag_ext & (1 << (SMC_DIAG_LGRINFO - 1))) &&
-	    !list_empty(&smc->conn.lgr->list)) {
+	    !list_empty(&smc->conn.lgr->list) && smc->conn.rmb_desc) {
 		struct smc_diag_lgrinfo linfo = {
 			.role = smc->conn.lgr->role,
 			.lnk[0].ibport = smc->conn.lgr->lnk[0].ibport,

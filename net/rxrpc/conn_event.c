@@ -44,6 +44,13 @@ static void rxrpc_conn_retransmit_call(struct rxrpc_connection *conn,
 	u32 serial, mtu, call_id, padding;
 
 	_enter("%d", conn->debug_id);
+	if (sp && sp->hdr.type == RXRPC_PACKET_TYPE_ACK) {
+		if (skb_copy_bits(skb, sizeof(struct rxrpc_wire_header),
+				  &pkt.ack, sizeof(pkt.ack)) < 0)
+			return;
+		if (pkt.ack.reason == RXRPC_ACK_PING_RESPONSE)
+			return;
+	}
 
 	chan = &conn->channels[channel];
 
