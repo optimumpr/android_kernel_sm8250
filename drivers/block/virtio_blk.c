@@ -497,6 +497,8 @@ static void virtblk_config_changed_work(struct work_struct *work)
 static void virtblk_config_changed(struct virtio_device *vdev)
 {
 	struct virtio_blk *vblk = vdev->priv;
+	/* Ensure no requests in virtqueues before deleting vqs. */
+	blk_mq_freeze_queue(vblk->disk->queue);
 
 	queue_work(virtblk_wq, &vblk->config_work);
 }
@@ -941,8 +943,6 @@ static int virtblk_freeze(struct virtio_device *vdev)
 	/* Make sure no work handler is accessing the device. */
 	flush_work(&vblk->config_work);
 
-	blk_mq_quiesce_queue(vblk->disk->queue);
-
 	vdev->config->del_vqs(vdev);
 	kfree(vblk->vqs);
 
@@ -960,7 +960,7 @@ static int virtblk_restore(struct virtio_device *vdev)
 
 	virtio_device_ready(vdev);
 
-	blk_mq_unquiesce_queue(vblk->disk->queue);
+	blk_mq_unfreeze_queue(vblk->disk->queue);
 	return 0;
 }
 #endif

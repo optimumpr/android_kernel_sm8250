@@ -1240,6 +1240,8 @@ sisfb_do_set_var(struct fb_var_screeninfo *var, int isactive, struct fb_info *in
 	htotal = var->left_margin + var->xres + var->right_margin + var->hsync_len;
 
 	vtotal = var->upper_margin + var->lower_margin + var->vsync_len;
+	if (!var->pixclock)
+		return -EINVAL;
 
 	pixclock = var->pixclock;
 

@@ -868,6 +868,8 @@ static int savagefb_check_var(struct fb_var_screeninfo   *var,
 	int memlen, vramlen, mode_valid = 0;
 
 	DBG("savagefb_check_var");
+	if (!var->pixclock)
+		return -EINVAL;
 
 	var->transp.offset = 0;
 	var->transp.length = 0;
