@@ -605,7 +605,6 @@ retry:
 		goto retry;
 	}
 
-	nfs4_put_deviceid_node(node);
 	return ERR_PTR(-ENODEV);
 }
 
