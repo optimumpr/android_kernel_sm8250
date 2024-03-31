@@ -5439,6 +5439,7 @@ static int md_alloc(dev_t dev, char *name)
 	 * remove it now.
 	 */
 	disk->flags |= GENHD_FL_EXT_DEVT;
+	disk->events |= DISK_EVENT_MEDIA_CHANGE;
 	mddev->gendisk = disk;
 	add_disk(disk);
 
@@ -5869,7 +5870,15 @@ static void md_clean(struct mddev *mddev)
 	mddev->persistent = 0;
 	mddev->level = LEVEL_NONE;
 	mddev->clevel[0] = 0;
-	mddev->flags = 0;
+	/*
+	 * Don't clear MD_CLOSING, or mddev can be opened again.
+	 * 'hold_active != 0' means mddev is still in the creation
+	 * process and will be used later.
+	 */
+	if (mddev->hold_active)
+		mddev->flags = 0;
+	else
+		mddev->flags &= BIT_ULL_MASK(MD_CLOSING);
 	mddev->sb_flags = 0;
 	mddev->ro = 0;
 	mddev->metadata_type[0] = 0;
@@ -7184,7 +7193,6 @@ static int md_ioctl(struct block_device *bdev, fmode_t mode,
 	void __user *argp = (void __user *)arg;
 	struct mddev *mddev = NULL;
 	int ro;
-	bool did_set_md_closing = false;
 
 	if (!md_ioctl_valid(cmd))
 		return -ENOTTY;
@@ -7279,7 +7287,6 @@ static int md_ioctl(struct block_device *bdev, fmode_t mode,
 			err = -EBUSY;
 			goto out;
 		}
-		did_set_md_closing = true;
 		mutex_unlock(&mddev->open_mutex);
 		sync_blockdev(bdev);
 	}
@@ -7472,7 +7479,7 @@ unlock:
 		mddev->hold_active = 0;
 	mddev_unlock(mddev);
 out:
-	if(did_set_md_closing)
+	if (cmd == STOP_ARRAY_RO || (err && cmd == STOP_ARRAY))
 		clear_bit(MD_CLOSING, &mddev->flags);
 	return err;
 }
@@ -7549,20 +7556,17 @@ static void md_release(struct gendisk *disk, fmode_t mode)
 	mddev_put(mddev);
 }
 
-static int md_media_changed(struct gendisk *disk)
+static unsigned int md_check_events(struct gendisk *disk, unsigned int clearing)
 {
 	struct mddev *mddev = disk->private_data;
+	unsigned int ret = 0;
 
-	return mddev->changed;
-}
-
-static int md_revalidate(struct gendisk *disk)
-{
-	struct mddev *mddev = disk->private_data;
-
+	if (mddev->changed)
+		ret = DISK_EVENT_MEDIA_CHANGE;
 	mddev->changed = 0;
-	return 0;
+	return ret;
 }
+
 static const struct block_device_operations md_fops =
 {
 	.owner		= THIS_MODULE,
@@ -7573,8 +7577,7 @@ static const struct block_device_operations md_fops =
 	.compat_ioctl	= md_compat_ioctl,
 #endif
 	.getgeo		= md_getgeo,
-	.media_changed  = md_media_changed,
-	.revalidate_disk= md_revalidate,
+	.check_events	= md_check_events,
 };
 
 static int md_thread(void *arg)
