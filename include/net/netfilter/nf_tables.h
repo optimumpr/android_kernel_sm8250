@@ -1423,4 +1423,7 @@ struct nftables_pernet {
 	u8			validate_state;
 };
 
+int nf_msecs_to_jiffies64(const struct nlattr *nla, u64 *result);
+__be64 nf_jiffies64_to_msecs(u64 input);
+
 #endif /* _NET_NF_TABLES_H */
